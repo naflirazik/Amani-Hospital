@@ -1,0 +1,6 @@
+{
+  "name": "We Care Hospital",
+  "description": "Professional modern healthcare website for We Care Hospital featuring department overviews, doctor directory, hospital services, and instant appointment booking.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
