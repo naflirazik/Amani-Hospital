@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { HOSPITAL_INFO } from '../data/mockData';
 import { ContactFormData } from '../types';
+import { saveContactMessageToSupabase } from '../lib/supabase';
 import { 
   Phone, 
   Mail, 
@@ -38,15 +39,20 @@ export const Contact: React.FC = () => {
     return Object.keys(errs).length === 0;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validate()) return;
 
     setIsSending(true);
-    setTimeout(() => {
-      setIsSending(false);
-      setIsSubmitted(true);
-    }, 500);
+    await saveContactMessageToSupabase({
+      name: formData.name.trim(),
+      email: formData.email.trim(),
+      phone: formData.phone.trim(),
+      subject: formData.subject,
+      message: formData.message.trim(),
+    });
+    setIsSending(false);
+    setIsSubmitted(true);
   };
 
   const handleReset = () => {

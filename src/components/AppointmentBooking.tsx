@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { DEPARTMENTS, DOCTORS, TIME_SLOTS, HOSPITAL_INFO } from '../data/mockData';
 import { AppointmentFormData, BookedConfirmation } from '../types';
+import { saveAppointmentToSupabase } from '../lib/supabase';
 import { 
   Calendar, 
   User, 
@@ -18,7 +19,8 @@ import {
   Video,
   Building,
   Sparkles,
-  PhoneCall
+  PhoneCall,
+  Database
 } from 'lucide-react';
 
 interface AppointmentBookingProps {
@@ -46,6 +48,7 @@ export const AppointmentBooking: React.FC<AppointmentBookingProps> = ({
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [confirmedBooking, setConfirmedBooking] = useState<BookedConfirmation | null>(null);
+  const [supabaseSaved, setSupabaseSaved] = useState<boolean | null>(null);
 
   // Sync props when user selects doctor/department from other sections
   useEffect(() => {
@@ -166,41 +169,62 @@ export const AppointmentBooking: React.FC<AppointmentBookingProps> = ({
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validateForm()) {
       return;
     }
 
     setIsSubmitting(true);
+    setSupabaseSaved(null);
 
-    // Simulate instant secure processing
-    setTimeout(() => {
-      const selectedDoc = DOCTORS.find((d) => d.id === formData.doctorId);
-      const selectedDept = DEPARTMENTS.find((d) => d.id === formData.departmentId);
-      const randomRef = 'WCH-' + Math.floor(100000 + Math.random() * 900000);
+    const selectedDoc = DOCTORS.find((d) => d.id === formData.doctorId);
+    const selectedDept = DEPARTMENTS.find((d) => d.id === formData.departmentId);
+    const randomRef = 'WCH-' + Math.floor(100000 + Math.random() * 900000);
 
-      const confirmation: BookedConfirmation = {
-        appointmentId: randomRef,
-        data: { ...formData },
-        doctorName: selectedDoc ? selectedDoc.name : 'First Available Attending Specialist',
-        departmentName: selectedDept ? selectedDept.name : 'General Outpatient Care',
-        bookingTimestamp: new Date().toLocaleDateString('en-US', {
-          month: 'short',
-          day: 'numeric',
-          year: 'numeric',
-          hour: '2-digit',
-          minute: '2-digit',
-        }),
-      };
+    const docName = selectedDoc ? selectedDoc.name : 'Attending Specialist';
+    const deptName = selectedDept ? selectedDept.name : 'General Care';
 
-      setConfirmedBooking(confirmation);
-      setIsSubmitting(false);
-    }, 600);
+    // Save directly to Supabase table
+    const result = await saveAppointmentToSupabase({
+      appointment_ref: randomRef,
+      full_name: formData.fullName.trim(),
+      phone: formData.phone.trim(),
+      email: formData.email.trim(),
+      department_id: formData.departmentId,
+      department_name: deptName,
+      doctor_id: formData.doctorId,
+      doctor_name: docName,
+      preferred_date: formData.preferredDate,
+      preferred_time: formData.preferredTime,
+      visit_type: formData.visitType,
+      symptoms: formData.symptoms || '',
+      status: 'confirmed',
+    });
+
+    setSupabaseSaved(result.success);
+
+    const confirmation: BookedConfirmation = {
+      appointmentId: randomRef,
+      data: { ...formData },
+      doctorName: docName,
+      departmentName: deptName,
+      bookingTimestamp: new Date().toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+      }),
+    };
+
+    setConfirmedBooking(confirmation);
+    setIsSubmitting(false);
   };
 
   const handleResetForm = () => {
     setConfirmedBooking(null);
+    setSupabaseSaved(null);
     setFormData({
       fullName: '',
       phone: '',
@@ -256,10 +280,22 @@ export const AppointmentBooking: React.FC<AppointmentBookingProps> = ({
                 Your consultation slot has been reserved. A confirmation SMS and digital entry pass have been dispatched to your contact details.
               </p>
               
-              {/* Reference ID Pill */}
-              <div className="mt-4 inline-flex items-center gap-2 bg-slate-100 border border-slate-300/80 px-4 py-2 rounded-xl text-slate-800 text-sm font-mono font-bold">
-                <span>Appointment Ref:</span>
-                <span className="text-blue-600">{confirmedBooking.appointmentId}</span>
+              {/* Reference ID Pill & Cloud Sync Badge */}
+              <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
+                <div className="inline-flex items-center gap-2 bg-slate-100 border border-slate-300/80 px-4 py-2 rounded-xl text-slate-800 text-sm font-mono font-bold">
+                  <span>Appointment Ref:</span>
+                  <span className="text-blue-600">{confirmedBooking.appointmentId}</span>
+                </div>
+                {supabaseSaved !== null && (
+                  <div className={`inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold border ${
+                    supabaseSaved
+                      ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                      : 'bg-amber-50 text-amber-700 border-amber-200'
+                  }`}>
+                    <Database className="w-3.5 h-3.5" />
+                    <span>{supabaseSaved ? 'Saved to Supabase Backend' : 'Saved Locally (Syncing)'}</span>
+                  </div>
+                )}
               </div>
             </div>
 
