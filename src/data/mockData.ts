@@ -146,7 +146,7 @@ export const DOCTORS: Doctor[] = [
   },
   {
     id: 'doc-cardio-2',
-    name: 'Dr. Priya Sharma',
+    name: 'Dr. Nafli Razik',
     title: 'Consultant Cardiothoracic Surgeon',
     departmentId: 'cardiology',
     departmentName: 'Cardiology & Heart Center',
@@ -157,7 +157,7 @@ export const DOCTORS: Doctor[] = [
     reviewsCount: 215,
     consultationFee: '$130',
     availability: 'Tue, Thu, Sat (10:00 AM - 04:00 PM)',
-    avatarUrl: '/Images/Nafli photo.JPG',
+    avatarUrl: '/Images/Nafli Photo1.png',
     bio: 'Specialist in minimally invasive heart valve replacements and coronary artery bypass graft (CABG) surgery.',
     specialties: ['Minimally Invasive Valve Repair', 'Off-Pump Bypass Surgery', 'Aortic Aneurysm'],
     education: 'Stanford University School of Medicine / AIIMS',
