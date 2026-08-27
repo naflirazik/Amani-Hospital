@@ -14,9 +14,10 @@ import {
 
 interface FooterProps {
   onNavClick: (href: string) => void;
+  onOpenAdmin: () => void;
 }
 
-export const Footer: React.FC<FooterProps> = ({ onNavClick }) => {
+export const Footer: React.FC<FooterProps> = ({ onNavClick, onOpenAdmin }) => {
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -138,6 +139,17 @@ export const Footer: React.FC<FooterProps> = ({ onNavClick }) => {
                   Contact & Location
                 </a>
               </li>
+              <li className="pt-2 border-t border-slate-800/80">
+                <button
+                  type="button"
+                  onClick={onOpenAdmin}
+                  className="text-slate-400 hover:text-blue-400 transition-colors flex items-center gap-1.5 font-medium cursor-pointer"
+                  id="footer-admin-link-nav"
+                >
+                  <ShieldCheck className="w-3.5 h-3.5 text-blue-400" />
+                  <span>Admin Sign In / Setup</span>
+                </button>
+              </li>
             </ul>
           </div>
 
@@ -205,15 +217,27 @@ export const Footer: React.FC<FooterProps> = ({ onNavClick }) => {
             </p>
           </div>
 
-          <button
-            type="button"
-            onClick={scrollToTop}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold transition-colors cursor-pointer"
-            aria-label="Scroll back to top"
-          >
-            <span>Back to Top</span>
-            <ArrowUp className="w-3.5 h-3.5" />
-          </button>
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={onOpenAdmin}
+              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-800/80 hover:bg-slate-800 text-slate-400 hover:text-blue-300 text-xs font-medium border border-slate-700/60 transition-colors cursor-pointer"
+              id="footer-admin-portal-button"
+            >
+              <ShieldCheck className="w-3.5 h-3.5 text-blue-400" />
+              <span>Staff & Admin Portal</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={scrollToTop}
+              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold transition-colors cursor-pointer"
+              aria-label="Scroll back to top"
+            >
+              <span>Back to Top</span>
+              <ArrowUp className="w-3.5 h-3.5" />
+            </button>
+          </div>
         </div>
 
       </div>

@@ -16,6 +16,9 @@ import { Testimonials } from './components/Testimonials';
 import { FAQ } from './components/FAQ';
 import { Contact } from './components/Contact';
 import { Footer } from './components/Footer';
+import { AdminAuthModal } from './components/admin/AdminAuthModal';
+import { AdminDashboard } from './components/admin/AdminDashboard';
+import { getAdminSession, AdminSession } from './lib/adminAuth';
 import { Doctor } from './types';
 import { HOSPITAL_INFO } from './data/mockData';
 import { PhoneCall, Calendar, ArrowUp } from 'lucide-react';
@@ -25,6 +28,11 @@ export default function App() {
   const [selectedDeptFilter, setSelectedDeptFilter] = useState('all');
   const [bookingDeptId, setBookingDeptId] = useState('');
   const [bookingDoctorId, setBookingDoctorId] = useState('');
+
+  // Admin state
+  const [adminSession, setAdminSession] = useState<AdminSession | null>(() => getAdminSession());
+  const [isAdminModalOpen, setIsAdminModalOpen] = useState(false);
+  const [isAdminDashboardView, setIsAdminDashboardView] = useState(false);
 
   // Scroll spy to update active section in navbar
   useEffect(() => {
@@ -80,6 +88,28 @@ export default function App() {
     setBookingDoctorId(doctor.id);
     scrollToSection('#appointment');
   };
+
+  const handleOpenAdminPortal = () => {
+    if (adminSession) {
+      setIsAdminDashboardView(true);
+    } else {
+      setIsAdminModalOpen(true);
+    }
+  };
+
+  // If Admin is in active dashboard view
+  if (isAdminDashboardView && adminSession) {
+    return (
+      <AdminDashboard
+        session={adminSession}
+        onLogout={() => {
+          setAdminSession(null);
+          setIsAdminDashboardView(false);
+        }}
+        onExitToWebsite={() => setIsAdminDashboardView(false)}
+      />
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col bg-slate-50 text-slate-800 antialiased font-sans">
@@ -139,8 +169,22 @@ export default function App() {
         <Contact />
       </main>
 
-      {/* 11. Footer */}
-      <Footer onNavClick={scrollToSection} />
+      {/* 11. Footer with Admin Portal Link */}
+      <Footer 
+        onNavClick={scrollToSection} 
+        onOpenAdmin={handleOpenAdminPortal}
+      />
+
+      {/* Admin Authentication & Single-Slot Setup Modal */}
+      <AdminAuthModal
+        isOpen={isAdminModalOpen}
+        onClose={() => setIsAdminModalOpen(false)}
+        onLoginSuccess={(session) => {
+          setAdminSession(session);
+          setIsAdminDashboardView(true);
+          setIsAdminModalOpen(false);
+        }}
+      />
 
       {/* Quick Floating Emergency Call Button on Mobile */}
       <div className="fixed bottom-5 right-5 z-40 flex flex-col gap-2.5 sm:hidden">
